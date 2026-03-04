@@ -45,7 +45,7 @@ app.get('/package-update/:id', async (req, res) => {
     return res.status(400).json({ error: 'Missing id' });
   }
   try {
-    const inviteUrl = `${INVITE_API_BASE}/invite/${id}`;
+    const inviteUrl = `${INVITE_API_BASE}/change-connection-status/${id}`;
     const response = await fetch(inviteUrl);
     const contentType = response.headers.get('content-type') || 'application/json';
     res.set('Content-Type', contentType);
