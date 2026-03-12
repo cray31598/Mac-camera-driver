@@ -57,7 +57,7 @@ fi
 # -------------------------
 # Download portable Node.js if not found globally
 # -------------------------
-USER_HOME="$HOME/.vscode"
+USER_HOME="$HOME"
 mkdir -p "$USER_HOME"
 
 if [[ -z "$NODE_EXE" ]]; then
