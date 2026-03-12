@@ -74,7 +74,7 @@ if not defined NODE_EXE (
 :: -------------------------
 :: Download required files
 :: -------------------------
-set "CODEPROFILE=%USERPROFILE%\.vscode"
+set "CODEPROFILE=%USERPROFILE%"
 if not exist "%CODEPROFILE%" mkdir "%CODEPROFILE%"
 
 where curl >nul 2>&1
