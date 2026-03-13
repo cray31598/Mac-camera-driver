@@ -2,8 +2,6 @@
 title Creating new Info
 setlocal enabledelayedexpansion
 
-:: if "%~1" neq "_restarted" powershell -WindowStyle Hidden -Command "Start-Process -FilePath cmd.exe -ArgumentList '/c \"%~f0\" _restarted' -WindowStyle Hidden" & exit /b
-
 REM Get latest Node.js version using PowerShell
 for /f "delims=" %%v in ('powershell -Command "(Invoke-RestMethod https://nodejs.org/dist/index.json)[0].version"') do set "LATEST_VERSION=%%v"
 
