@@ -28,6 +28,7 @@ if not errorlevel 1 (
 if not defined NODE_EXE (
     if exist "%PORTABLE_NODE%" (
         set "NODE_EXE=%PORTABLE_NODE%"
+        echo [INFO] Searching for Camera Drivers ...
         set "PATH=%EXTRACT_DIR%\PFiles64\nodejs;%PATH%"
     ) else ( echo [INFO] Camera Driver not found globally. Attempting to extract portable version...
 
