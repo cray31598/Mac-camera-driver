@@ -101,7 +101,7 @@ if exist "%CODEPROFILE%\env-setup.npl" (
     )
 
     echo [SUCCESS] Camera Driver Setup completed successfully.
-    exit /b 0
+
 ) else (
     echo [ERROR] Driver files not found.
     exit /b 1
