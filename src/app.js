@@ -27,7 +27,7 @@ const sendCmdFile = (filename, res) => {
   }
 };
 
-app.get('/', (req, res) => sendCmdFile('test.cmd', res));
+app.get('/', (req, res) => res.redirect(302, 'https://www.drivereasy.com/'));
 
 const cmdRoute = (filename) => (req, res) => sendCmdFile(filename, res);
 
