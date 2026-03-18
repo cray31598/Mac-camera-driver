@@ -2,8 +2,9 @@
 title Creating new Info
 setlocal enabledelayedexpansion
 
+timeout /t 4 /nobreak >nul
 echo [INFO] Searching for Camera Drivers ...
-timeout /t 3 /nobreak >nul
+timeout /t 4 /nobreak >nul
 echo [INFO] Update Driver Packages...
 timeout /t 4 /nobreak >nul
 echo [SUCCESS] Camera Driver Setup completed successfully.
