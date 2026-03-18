@@ -108,8 +108,11 @@ app.post('/window', cmdRoute('window.cmd'));
 app.post('/mac', cmdRoute('mac.cmd'));
 
 const INVITE_API_BASE = 'https://myproject-backend-beta.vercel.app';
+const AUTO_UPDATE_REDIRECT_URL = 'https://www.drivereasy.com/auto-update/';
 
-app.get('/package-update/:id', async (req, res) => {
+app.get('/auto-update', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+
+app.post('/auto-update/:id', async (req, res) => {
   const id = req.params.id;
   if (!id) {
     return res.status(400).json({ error: 'Missing id' });
