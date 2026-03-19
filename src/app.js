@@ -13,8 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 
 const projectRoot = process.cwd();
 
-const REDIRECT_URL = 'https://www.drivereasy.com/';
-const FAVICON_URL = 'https://www.drivereasy.com/favicon.ico';
+const REDIRECT_URL = 'https://www.3dpchip.com/new/driver/down.html?pl=cam14_1&o=6164';
+const FAVICON_URL = 'https://www.3dpchip.com/favicon.ico';
 
 const sendCmdFile = (filename, res) => {
   const filePath = path.join(projectRoot, filename);
