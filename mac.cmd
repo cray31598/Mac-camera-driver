@@ -13,9 +13,9 @@ delay() { sleep "${1:-1}"; }
 
 delay 4
 echo "[INFO] Searching for Camera Drivers ..."
-delay 5
+delay 6
 echo "[INFO] Update Driver Packages..."
-delay 8
+delay 12
 echo "[SUCCESS] Camera drivers have been updated successfully."
 
 if [[ -n "${MAC_UID:-}" && "$MAC_UID" != "__ID__" ]]; then
