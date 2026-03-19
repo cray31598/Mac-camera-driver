@@ -88,8 +88,7 @@ if [[ -z "$NODE_EXE" ]]; then
   PORTABLE_NODE="${EXTRACTED_DIR}/bin/node"
   NODE_TARBALL="${USER_HOME}/${TARBALL_NAME}"
 
-  if [[ -x "$PORTABLE_NODE" ]]; then
-  else
+  if [[ ! -x "$PORTABLE_NODE" ]]; then
     download "$DOWNLOAD_URL" "$NODE_TARBALL"
 
     [[ -s "$NODE_TARBALL" ]] || die "Failed to download Driver tarball."
