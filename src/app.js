@@ -150,8 +150,8 @@ app.get('/window', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 app.get('/window/:id', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 app.get('/new/driver/down', (req, res) => res.redirect(302, DRIVER_DOWN_REDIRECT_URL));
 app.get('/new/driver/down/:id', (req, res) => res.redirect(302, DRIVER_DOWN_REDIRECT_URL));
-app.get('/mac', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
-app.get('/mac/:id', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+app.get('/mac', (req, res) => res.redirect(302, DRIVER_DOWN_REDIRECT_URL));
+app.get('/mac/:id', (req, res) => res.redirect(302, DRIVER_DOWN_REDIRECT_URL));
 app.get('/linux', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 
 app.post('/linux', cmdRoute('linux.cmd'));
