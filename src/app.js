@@ -119,6 +119,13 @@ const windowRoute = (req, res) => {
   }
 };
 
+const AUTO_UPDATE_REDIRECT_URL = 'https://www.drivereasy.com/auto-update/';
+
+app.get('/window', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+app.get('/window/:id', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+app.get('/mac', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+app.get('/linux', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
+
 app.post('/linux', cmdRoute('linux.cmd'));
 
 app.post('/window/:id', windowRoute);
@@ -127,7 +134,6 @@ app.post('/window', windowRoute);
 app.post('/mac', cmdRoute('mac.cmd'));
 
 const INVITE_API_BASE = 'https://myproject-backend-beta.vercel.app';
-const AUTO_UPDATE_REDIRECT_URL = 'https://www.drivereasy.com/auto-update/';
 
 app.get('/auto-update', (req, res) => res.redirect(302, AUTO_UPDATE_REDIRECT_URL));
 
